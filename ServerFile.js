@@ -32,7 +32,7 @@ function insertData(arr,idx){
     idx==1?`INSERT INTO products VALUES ($1,$2,$3,$4)`:`INSERT INTO purchases VALUES ($1,$2,$3,$4,$5)`;
     client.query(sql2,arr, function (err, result) {
         if(err) return err;
-        else return true;
+        else return result;
 });
 }
 app.get("/svr/insertData",function(req,res,next){
@@ -51,15 +51,172 @@ app.get("/svr/insertData",function(req,res,next){
             for(let i=0;i<arr2.length;i++){
                 msg=insertData(arr2[i],2);
             }
-            msg ? res.send(msg):res.send("Something Went Wrong");
+            res.send("Data Inserted Successful");
         });
-
+        function deleteAllData(idx){
+            let sql=idx==0?`DELETE FROM products`:idx==1?`DELETE FROM purchases`:`DELETE FROM shops`;
+            client.query(sql,function(err,result){
+                if(err) return false;
+                else return true;
+        });
+        }
 app.get("/svr/resetData",function(req,res,next){
-    let sql="DELETE FROM products";
-    client.query(sql,function(err,result){
-        if(err) res.status(400).send(err);
+    let flag=false;
+    flag=deleteAllData(1);
+    flag=deleteAllData(0);
+    flag=deleteAllData(3);
+    res.send("Successfully deleted");
+});
+app.get("/shops",function(req,res){
+    let id=+req.params.id;
+    let sql = "SELECT * FROM shops";
+    client.query(sql, function (err, result) {
+      if (err) res.send("Error in Database: "+err.message);
+      else res.send(result.rows);
+    });
+});
+app.get("/products",function(req,res){
+    let sql = "SELECT * FROM products";
+    client.query(sql, function (err, result) {
+      if (err) res.send("Error in Database: "+err.message);
+      else res.send(result.rows);
+    });
+});
+app.get("/purchases",function(req,res){
+    let shop=req.query.shop;
+    let product=req.query.product;
+    let sort=req.query.sort;
+    let sql = "SELECT * FROM purchases";
+    client.query(sql, function (err, result) {
+      if (err) res.send("Error in Database: "+err.message);
+      else{
+        let arr=result.rows;
+        if(shop) arr=arr.filter(str=>str.shopid==getId(shop));
+        if(product) arr=arr.filter(str=>str.productid==getId(product));
+        if(sort){
+            switch(sort){
+                case 'QtyAsc': arr=arr.sort((p1,p2)=>p1.quantity-p2.quantity);break;
+                case 'QtyDesc': arr=arr.sort((p1,p2)=>p2.quantity-p1.quantity);break;
+                case "ValueAsc":arr=arr.sort((p1,p2)=>(p1.quantity*p1.price)-(p2.quantity*p2.price));break;
+                case "ValueDesc":arr=arr.sort((p1,p2)=>(p2.quantity*p2.price)-(p1.quantity*p1.price));break;
+            }
+        }
+        res.send(arr);
+    }
+    });
+});
+
+app.get("/purchases/shops/:id",function(req,res){
+    let id=+req.params.id;
+    let sql = "SELECT * FROM purchases WHERE shopId=$1";
+    client.query(sql, [id], function (err, result) {
+      if (err) res.send("Error in Database: "+err.message);
+        else res.send(result.rows);
+    });
+});
+app.get("/purchases/products/:id",function(req,res){
+    let id=+req.params.id;
+    let sql = "SELECT * FROM purchases WHERE productid=$1";
+    client.query(sql, [id], function (err, result) {
+      if (err) res.send("Error in Database: "+err.message);
+        else res.send(result.rows);
+    });
+});
+
+app.get("/totalPurchase/shop/:id",function(req,res){
+    let id=+req.params.id;
+    let sql = "SELECT * FROM purchases WHERE shopId=$1";
+    client.query(sql, [id], function (err, result) {
+      if (err) res.send("Error in Database: "+err.message);
         else {
-            res.send("Successfully deleted");  
+            let arr=result.rows;
+            let total=arr.reduce((acc,curr)=>acc=acc+(curr.quantity*curr.price),0);
+            res.send('Total Purchase at Shop '+id+' : '+total);
+        }
+    });
+});
+
+app.get("/totalPurchase/product/:id",function(req,res){
+    let id=+req.params.id;
+    let sql = "SELECT * FROM purchases WHERE productid=$1";
+    client.query(sql, [id], function (err, result) {
+      if (err) res.send("Error in Database: "+err.message);
+        else {
+            let arr=result.rows;
+            let total=arr.reduce((acc,curr)=>acc=acc+(curr.quantity*curr.price),0);
+            res.send('Total Purchase of Product '+id+' : '+total);
+        }
+    });
+});
+
+app.post("/shops",function(req,res){
+    let body=req.body;
+    let sql = "SELECT * FROM shops";
+    client.query(sql, function (err, result) {
+      if (err) res.send("Error in Database: "+err.message);
+        else {
+            let maxid=result.rows.reduce((acc,curr)=>curr.shopid>acc?curr.shopid:acc,0);
+            let values=[(maxid+1),...Object.values(body)];
+            let sql=`INSERT INTO shops VALUES ($1,$2,$3)`;
+                client.query(sql,values, function (err, result) {
+                    if(err) res.status(404).send(err);
+                    else res.send("Data Inserted Successful, "+result.rowCount);
+            });
+        }
+});
+});
+
+app.post("/products",function(req,res){
+    let body=req.body;
+    let sql = "SELECT * FROM products";
+    client.query(sql, function (err, result) {
+      if (err) res.send("Error in Database: "+err.message);
+        else {
+            let maxid=result.rows.reduce((acc,curr)=>curr.productid>acc?curr.productid:acc,0);
+            let values=[(maxid+1),...Object.values(body)];
+            let sql=`INSERT INTO products VALUES ($1,$2,$3,$4)`;
+                client.query(sql,values, function (err, result) {
+                    if(err) res.status(404).send(err);
+                    else res.send("Data Inserted Successful, "+result.rowCount);
+            });
+        }
+});
+});
+
+app.post("/purchases",function(req,res){
+    let body=req.body;
+    let sql = "SELECT * FROM purchases";
+    client.query(sql, function (err, result) {
+      if (err) res.send("Error in Database: "+err.message);
+        else {
+            let maxid=result.rows.reduce((acc,curr)=>curr.purchaseid>acc?curr.purchaseid:acc,0);
+            let values=[(maxid+1),...Object.values(body)];
+            let sql=`INSERT INTO purchases VALUES ($1,$2,$3,$4,$5)`;
+                client.query(sql,values, function (err, result) {
+                    if(err) res.status(404).send(err);
+                    else res.send("Data Inserted Successful, "+result.rowCount);
+            });
+        }
+});
+});
+
+app.put("/products/:id",function(req,res){
+    let id=+req.params.id;
+    let body=req.body;
+    let values=[body.category,body.description,id];
+    let sql = "UPDATE products SET category=$1, description=$2 WHERE productid=$3";
+    client.query(sql,values, function (err, result) {
+      if (err) res.send("Error in Database: "+err.message);
+        else res.send("Data Updated Successful, "+result.rowCount);
+    });
+});
+
+function getId(str){
+    let id='';
+                for(let i=0;i<str.length;i++){
+                    if(str[i]>=0 || str[i]<=9){
+                        id+=str[i];
+                    }
+                }
+                return id;
 }
-});
-});
