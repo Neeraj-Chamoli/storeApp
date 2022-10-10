@@ -82,6 +82,14 @@ app.get("/products",function(req,res){
       else res.send(result.rows);
     });
 });
+app.get("/products/:id",function(req,res){
+    let id=+req.params.id;
+    let sql = "SELECT * FROM products WHERE productid=$1";
+    client.query(sql,[id], function (err, result) {
+      if (err) res.send("Error in Database: "+err.message);
+      else res.send(result.rows[0]);
+    });
+});
 app.get("/purchases",function(req,res){
     let shop=req.query.shop;
     let product=req.query.product;
