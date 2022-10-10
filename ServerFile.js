@@ -100,7 +100,10 @@ app.get("/purchases",function(req,res){
       else{
         let arr=result.rows;
         if(shop) arr=arr.filter(str=>str.shopid==getId(shop));
-        if(product) arr=arr.filter(str=>str.productid==getId(product));
+        if(product){
+            let prod=product.split(',');
+             arr=arr.filter(str=>prod.findIndex(ele=>getId(ele)==str.productid)>=0);
+        }
         if(sort){
             switch(sort){
                 case 'QtyAsc': arr=arr.sort((p1,p2)=>p1.quantity-p2.quantity);break;
