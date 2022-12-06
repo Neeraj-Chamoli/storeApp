@@ -133,7 +133,7 @@ app.get("/purchases/shops/:id",function(req,res){
 });
 app.get("/purchases/products/:id",function(req,res){
     let id=+req.params.id;
-    let sql = "SELECT * FROM purchases WHERE productid=$1";
+    let sql = "SELECT * FROM purchases WHERE productId=$1";
     client.query(sql, [id], function (err, result) {
       if (err) res.send("Error in Database: "+err.message);
         else res.send(result.rows);
@@ -155,7 +155,7 @@ app.get("/totalPurchase/shop/:id",function(req,res){
 
 app.get("/totalPurchase/product/:id",function(req,res){
     let id=+req.params.id;
-    let sql = "SELECT * FROM purchases WHERE productid=$1";
+    let sql = "SELECT * FROM purchases WHERE productId=$1";
     client.query(sql, [id], function (err, result) {
       if (err) res.send("Error in Database: "+err.message);
         else {
@@ -221,7 +221,7 @@ app.put("/products/:id",function(req,res){
     let id=+req.params.id;
     let body=req.body;
     let values=[body.category,body.description,id];
-    let sql = "UPDATE products SET category=$1, description=$2 WHERE productid=$3";
+    let sql = "UPDATE products SET category=$1, description=$2 WHERE productId=$3";
     client.query(sql,values, function (err, result) {
       if (err) res.send("Error in Database: "+err.message);
         else res.send("Data Updated Successful, "+result.rowCount);
