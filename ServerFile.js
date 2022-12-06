@@ -68,7 +68,6 @@ app.get("/svr/resetData",function(req,res,next){
     res.send("Successfully deleted");
 });
 app.get("/shops",function(req,res){
-    let id=+req.params.id;
     let sql = "SELECT * FROM shops";
     client.query(sql, function (err, result) {
       if (err) res.send("Error in Database: "+err.message);
@@ -84,7 +83,6 @@ app.get("/products",function(req,res){
         console.log(err);
         res.send("Error in Database: "+err.message);}
       else {
-        console.log(result);
         res.send(result.rows);}
     });
 });
