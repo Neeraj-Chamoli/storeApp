@@ -3,13 +3,14 @@ let app = express();
 app.use(express.json());
 const { Client } = require("pg");
 const client = new Client({
-    user: "qbnpgemnvnlgcq",
-password: "e76ef5d9e4f9a8d1967b76bca41facd2765b9b4d7477b2e2250f9bd8a448d0ff",
-database: "da0nt4017f0js7",
+    user: "store_db_gbjd_user",
+password: "wFQ7cLnzfYMFHW2knTSUcZZYjACqZIoi",
+database: "postgres://store_db_gbjd_user:wFQ7cLnzfYMFHW2knTSUcZZYjACqZIoi@dpg-ce7dki1a6gdnvfsvo0i0-a/store_db_gbjd",
 port: 5432,
-host: "ec2-44-205-64-253.compute-1.amazonaws.com",
+host: "dpg-ce7dki1a6gdnvfsvo0i0-a",
 ssl: { rejectUnauthorized: false },});
 client.connect(function (res, error) {
+    console.log(error,res)
     console.log(`Connected!!`);
 });
 app.use(function (req, res, next) {
@@ -76,10 +77,16 @@ app.get("/shops",function(req,res){
     });
 });
 app.get("/products",function(req,res){
+    
     let sql = "SELECT * FROM products";
+    
     client.query(sql, function (err, result) {
-      if (err) res.send("Error in Database: "+err.message);
-      else res.send(result.rows);
+      if (err) {
+        console.log(err);
+        res.send("Error in Database: "+err.message);}
+      else {
+        console.log(result);
+        res.send(result.rows);}
     });
 });
 app.get("/products/:id",function(req,res){
