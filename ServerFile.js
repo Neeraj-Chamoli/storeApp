@@ -90,7 +90,7 @@ app.get("/products",function(req,res){
 });
 app.get("/products/:id",function(req,res){
     let id=+req.params.id;
-    let sql = "SELECT * FROM products WHERE productid=$1";
+    let sql = "SELECT * FROM products WHERE productId=$1";
     client.query(sql,[id], function (err, result) {
       if (err) res.send("Error in Database: "+err.message);
       else res.send(result.rows[0]);
