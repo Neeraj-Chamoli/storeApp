@@ -3,14 +3,13 @@ let app = express();
 app.use(express.json());
 const { Client } = require("pg");
 const client = new Client({
-    user: "store_db_gbjd_user",
-password: "wFQ7cLnzfYMFHW2knTSUcZZYjACqZIoi",
-database: "postgres://store_db_gbjd_user:wFQ7cLnzfYMFHW2knTSUcZZYjACqZIoi@dpg-ce7dki1a6gdnvfsvo0i0-a/store_db_gbjd",
+    user: "postgres",
+password: "nc8954213886",
+database: "postgres",
 port: 5432,
-host: "dpg-ce7dki1a6gdnvfsvo0i0-a",
+host: "db.zjeopjpqiwmlqqqyrpoi.supabase.co",
 ssl: { rejectUnauthorized: false },});
 client.connect(function (res, error) {
-    console.log(error,res)
     console.log(`Connected!!`);
 });
 app.use(function (req, res, next) {
